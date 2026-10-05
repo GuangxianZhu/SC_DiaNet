@@ -9,6 +9,7 @@ import torch
 from dianet import align_jump
 
 import os
+SR = bool(int(os.environ.get('SR', '0')))  # stochastic-readout Btanh
 RN = bool(int(os.environ.get('RN', '0')))  # per-neuron weight range normalisation
 WARM = 0  # cycles discarded at the output decoder (pipeline fill of decorrelation buffers)
 DECOR = None  # None | 'perm' (ideal time permutation) | 'shufD' (D-entry shuffle buffer) | 'regen' (decode + re-SNG)
@@ -46,7 +47,10 @@ def btanh(count, m, r):
     half = (r // 2).float()
     for t in range(L):
         state = torch.minimum(torch.clamp(state + step[..., t], min=0), rmax)
-        out[..., t] = (state >= half).float()
+        if SR:  # stochastic readout: compare state with a fresh random number instead of a fixed threshold
+            out[..., t] = (torch.rand(state.shape) * r.float() < state + 0.5).float()
+        else:
+            out[..., t] = (state >= half).float()
     return out
 
 
@@ -147,7 +151,7 @@ def sc_fcnn(model, x, L, gen, r_scale=1.0):
             ws = W.abs().amax(-1).clamp(min=1e-3)
             W = W / ws.unsqueeze(-1)
         z = sc_layer(z, sng(W, L, gen), M, r_scale=r_scale, wscale=ws)
-    return z[:, 0].mean(-1) * 2 - 1
+    return z[:, 0, :, WARM:].mean(-1) * 2 - 1
 
 
 @torch.no_grad()
@@ -168,4 +172,4 @@ def sc_deepmlp(model, x, L, gen, r_scale=1.0):
                 ws = torch.ones_like(ws)
             W = W / ws.unsqueeze(-1)
         z = sc_layer(z, sng(W, L, gen), M, jb, jm, r_scale, ws)
-    return z[:, 0].mean(-1) * 2 - 1
+    return z[:, 0, :, WARM:].mean(-1) * 2 - 1
