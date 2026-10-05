@@ -1,0 +1,11 @@
+{'float_test': 0.978, 'float_test_subset': 0.974}
+calib r_scale 0.25 0.49
+calib r_scale 0.5 0.514
+calib r_scale 1.0 0.41
+calib r_scale 2.0 0.358
+L=32 acc=0.1420 (2s)
+L=64 acc=0.1940 (5s)
+L=128 acc=0.2950 (12s)
+L=256 acc=0.4700 (24s)
+L=512 acc=0.6940 (50s)
+L=1024 acc=0.8430 (113s)

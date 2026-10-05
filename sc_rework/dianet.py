@@ -4,6 +4,7 @@ Semantics follow DiaNet_SC_II/patch dianet mnist/11x11x1_4x4_wider.ipynb exactly
 (masks, input-segment insertion into odd slots, jump connection from layer i-2,
 tanh activation, weights clamped to [-1, 1], output = even slots of last layer).
 """
+import os
 import torch
 import torch.nn as nn
 from orig_dianet import Script_DiaNet
@@ -131,14 +132,16 @@ class FCNN(nn.Module):
     def __init__(self, dims=(784, 100, 200, 10)):
         super().__init__()
         self.ls = nn.ModuleList(nn.Linear(a, b, bias=False) for a, b in zip(dims[:-1], dims[1:]))
+        self.noise_L = 0
+        self.wmax = float(os.environ.get('CLAMP', 1.0))  # original recipe: clamp 0.5, SC uses 2*w
 
     @torch.no_grad()
     def clamp_(self):
         for l in self.ls:
-            l.weight.clamp_(-1, 1)
+            l.weight.clamp_(-self.wmax, self.wmax)
 
     def forward(self, x):
-        x = x.flatten(1)
+        x = sc_noise(x.flatten(1), self.noise_L, self.training)
         for l in self.ls:
-            x = torch.tanh(l(x))
+            x = sc_noise(torch.tanh(l(x)), self.noise_L, self.training)
         return x

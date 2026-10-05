@@ -1,0 +1,4 @@
+dia_noise256.pt shuf4 256 warm 116 0.45
+dia_noise256.pt shuf4 1024 warm 116 0.73
+dia_noise256.pt shuf8 256 warm 232 0.6333333333333333
+dia_noise256.pt shuf8 1024 warm 232 0.8233333333333334

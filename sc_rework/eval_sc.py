@@ -42,7 +42,7 @@ def main():
         t = time.time()
         res[f'L{L}'] = sc_acc(fn, model, xte[:n], yte[:n], L, 7, s, bs)
         print(f'L={L} acc={res[f"L{L}"]:.4f} ({time.time()-t:.0f}s)', flush=True)
-    json.dump(res, open(f'res_{os.path.basename(path)}_{sc.DECOR}.json', 'w'), indent=1)
+    json.dump(res, open(f'res_{os.path.basename(path)}_{sc.DECOR}_rn{int(sc.RN)}.json', 'w'), indent=1)
 
 
 if __name__ == '__main__':

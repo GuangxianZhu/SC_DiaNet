@@ -57,6 +57,10 @@ def main():
     model = PatchDiaNet() if kind == 'dianet' else FCNN(tuple(int(d) for d in os.environ.get('DIMS', '784,100,200,10').split(',')))
     if kind == 'dianet':
         model.set_sc(gain, noise_L)
+    else:
+        model.noise_L = noise_L
+    if os.environ.get('INIT'):
+        model.load_state_dict(torch.load(os.environ['INIT']))
     print(f'gain {gain} noise_L {noise_L}')
     print('params(nonzero):', sum(int((p != 0).sum()) for p in model.parameters()))
     opt = torch.optim.Adam(model.parameters(), lr=1e-3)
