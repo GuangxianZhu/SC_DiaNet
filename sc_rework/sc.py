@@ -148,3 +148,24 @@ def sc_fcnn(model, x, L, gen, r_scale=1.0):
             W = W / ws.unsqueeze(-1)
         z = sc_layer(z, sng(W, L, gen), M, r_scale=r_scale, wscale=ws)
     return z[:, 0].mean(-1) * 2 - 1
+
+
+@torch.no_grad()
+def sc_deepmlp(model, x, L, gen, r_scale=1.0):
+    z = sng(x.flatten(1), L, gen).unsqueeze(1)
+    n = len(model.ls)
+    for k, l in enumerate(model.ls):
+        W = l.weight.detach().unsqueeze(0)
+        O = W.shape[1]
+        M = torch.ones_like(W, dtype=torch.bool)
+        jb = jm = None
+        if model.skip and 0 < k < n - 1:
+            jb, jm = z, torch.ones(O, dtype=torch.bool)
+        ws = None
+        if RN:
+            ws = W.abs().amax(-1).clamp(min=1e-3)
+            if jm is not None:
+                ws = torch.ones_like(ws)
+            W = W / ws.unsqueeze(-1)
+        z = sc_layer(z, sng(W, L, gen), M, jb, jm, r_scale, ws)
+    return z[:, 0].mean(-1) * 2 - 1

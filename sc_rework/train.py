@@ -6,7 +6,7 @@ Usage: python train.py {dianet|fcnn} EPOCHS OUT.pt [seed] [gain] [noise_L]
 import os, sys, time
 import torch, torch.nn as nn, torch.nn.functional as F
 import torchvision
-from dianet import PatchDiaNet, FCNN
+from dianet import PatchDiaNet, FCNN, DeepMLP
 
 torch.set_num_threads(int(os.environ.get("NT", 4)))
 
@@ -54,7 +54,7 @@ def main():
     noise_L = int(sys.argv[6]) if len(sys.argv) > 6 else 0
     torch.manual_seed(seed)
     (xtr, ytr), (xva, yva), (xte, yte) = get_data(kind)
-    model = PatchDiaNet() if kind == 'dianet' else FCNN(tuple(int(d) for d in os.environ.get('DIMS', '784,100,200,10').split(',')))
+    model = DeepMLP(int(os.environ['DEPTH']), int(os.environ.get('WIDTH', 32))) if kind == 'deep' else PatchDiaNet() if kind == 'dianet' else FCNN(tuple(int(d) for d in os.environ.get('DIMS', '784,100,200,10').split(',')))
     if kind == 'dianet':
         model.set_sc(gain, noise_L)
     else:

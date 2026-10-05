@@ -6,9 +6,9 @@ r_scale (Btanh state count multiplier) is picked on 500 validation images.
 import os, sys, time, json
 import torch
 from train import get_data, accuracy
-from dianet import PatchDiaNet, FCNN
+from dianet import PatchDiaNet, FCNN, DeepMLP
 import sc
-from sc import sc_patchdianet, sc_fcnn
+from sc import sc_patchdianet, sc_fcnn, sc_deepmlp
 sc.DECOR = os.environ.get('DECOR') or None
 
 torch.set_num_threads(int(os.environ.get("NT", 4)))
@@ -26,14 +26,14 @@ def main():
     kind, path, n = sys.argv[1], sys.argv[2], int(sys.argv[3])
     Ls = [int(v) for v in sys.argv[4].split(',')] if len(sys.argv) > 4 else [32, 64, 128, 256, 512, 1024]
     _, (xva, yva), (xte, yte) = get_data(kind)
-    model = PatchDiaNet() if kind == 'dianet' else FCNN(tuple(int(d) for d in os.environ.get('DIMS', '784,100,200,10').split(',')))
+    model = DeepMLP(int(os.environ['DEPTH']), int(os.environ.get('WIDTH', 32))) if kind == 'deep' else PatchDiaNet() if kind == 'dianet' else FCNN(tuple(int(d) for d in os.environ.get('DIMS', '784,100,200,10').split(',')))
     model.load_state_dict(torch.load(path)); model.eval()
-    fn = sc_patchdianet if kind == 'dianet' else sc_fcnn
+    fn = sc_patchdianet if kind == 'dianet' else sc_deepmlp if kind == 'deep' else sc_fcnn
     bs = 50 if kind == 'dianet' else 25
     res = {'float_test': accuracy(model, xte, yte), 'float_test_subset': accuracy(model, xte[:n], yte[:n])}
     print(res, flush=True)
     cal = {}
-    for s in [0.25, 0.5, 1.0, 2.0]:
+    for s in [0.25, 0.5, 1.0, 2.0, 4.0]:
         cal[s] = sc_acc(fn, model, xva[:500], yva[:500], 256, 123, s, bs)
         print('calib r_scale', s, cal[s], flush=True)
     s = max(cal, key=cal.get)

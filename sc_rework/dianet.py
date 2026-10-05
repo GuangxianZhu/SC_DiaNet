@@ -145,3 +145,27 @@ class FCNN(nn.Module):
         for l in self.ls:
             x = sc_noise(torch.tanh(l(x)), self.noise_L, self.training)
         return x
+
+
+class DeepMLP(nn.Module):
+    """784 -> w -> (depth-2 hidden w->w layers with identity skip into the pre-activation) -> 10."""
+
+    def __init__(self, depth=4, width=32, skip=True):
+        super().__init__()
+        dims = [784] + [width] * (depth - 1) + [10]
+        self.ls = nn.ModuleList(nn.Linear(a, b, bias=False) for a, b in zip(dims[:-1], dims[1:]))
+        self.skip, self.noise_L = skip, 0
+
+    @torch.no_grad()
+    def clamp_(self):
+        for l in self.ls:
+            l.weight.clamp_(-1, 1)
+
+    def forward(self, x):
+        x = sc_noise(x.flatten(1), self.noise_L, self.training)
+        for k, l in enumerate(self.ls):
+            pre = l(x)
+            if self.skip and 0 < k < len(self.ls) - 1:
+                pre = pre + x
+            x = sc_noise(torch.tanh(pre), self.noise_L, self.training)
+        return x

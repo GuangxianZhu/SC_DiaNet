@@ -1,0 +1,18 @@
+gain 1.0 noise_L 256
+params(nonzero): 27456
+ep 0 loss 1.2227 val 0.9384 best 0.9384 1s
+ep 1 loss 0.9543 val 0.9528 best 0.9528 1s
+ep 2 loss 0.9111 val 0.9572 best 0.9572 1s
+ep 3 loss 0.8907 val 0.9646 best 0.9646 1s
+ep 4 loss 0.8792 val 0.9664 best 0.9664 1s
+ep 5 loss 0.8713 val 0.9702 best 0.9702 1s
+ep 6 loss 0.8648 val 0.9702 best 0.9702 1s
+ep 7 loss 0.8594 val 0.9712 best 0.9712 1s
+ep 8 loss 0.8563 val 0.9706 best 0.9712 1s
+ep 9 loss 0.8531 val 0.9698 best 0.9712 1s
+ep 10 loss 0.8503 val 0.9716 best 0.9716 1s
+ep 11 loss 0.8485 val 0.9720 best 0.9720 1s
+ep 12 loss 0.8473 val 0.9732 best 0.9732 1s
+ep 13 loss 0.8462 val 0.9726 best 0.9732 1s
+ep 14 loss 0.8461 val 0.9724 best 0.9732 1s
+FINAL val 0.9732 test 0.9652
